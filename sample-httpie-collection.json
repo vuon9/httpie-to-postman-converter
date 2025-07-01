@@ -1,0 +1,429 @@
+{
+  "meta": {
+    "format": "HTTPie Workspace",
+    "version": "1.0.0",
+    "contentType": "application/json",
+    "schema": "https://httpie.org/schemas/workspace.json",
+    "docs": "https://httpie.org/docs",
+    "source": "HTTPie Desktop"
+  },
+  "entry": {
+    "name": "My API Testing Workspace",
+    "icon": {
+      "name": "folder",
+      "color": "#3498db"
+    },
+    "auth": {
+      "type": "none"
+    },
+    "requests": [
+      {
+        "name": "Get User Profile",
+        "url": "{{base_url}}/api/v1/users/{{user_id}}",
+        "method": "GET",
+        "headers": [
+          {
+            "name": "Accept",
+            "value": "application/json",
+            "enabled": true
+          },
+          {
+            "name": "User-Agent",
+            "value": "HTTPie-Desktop/{{version}}",
+            "enabled": true
+          }
+        ],
+        "queryParams": [
+          {
+            "name": "include",
+            "value": "profile,settings",
+            "enabled": true
+          }
+        ],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "target": "header",
+          "credentials": {
+            "username": "",
+            "password": "{{access_token}}"
+          }
+        },
+        "body": {
+          "type": "none",
+          "file": {
+            "name": ""
+          },
+          "text": {
+            "value": "",
+            "format": ""
+          },
+          "form": {
+            "isMultipart": false,
+            "fields": []
+          },
+          "graphql": {
+            "query": "",
+            "variables": ""
+          }
+        }
+      }
+    ],
+    "collections": [
+      {
+        "name": "User Management",
+        "icon": {
+          "name": "user",
+          "color": "#e74c3c"
+        },
+        "auth": {
+          "type": "basic",
+          "credentials": {
+            "username": "{{admin_username}}",
+            "password": "{{admin_password}}"
+          }
+        },
+        "requests": [
+          {
+            "name": "Create New User",
+            "url": "{{base_url}}/api/v1/users",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "application/json",
+                "enabled": true
+              },
+              {
+                "name": "Accept",
+                "value": "application/json",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "none"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"username\": \"{{new_username}}\",\n  \"email\": \"{{new_email}}\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"user\"\n}",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "Update User",
+            "url": "{{base_url}}/api/v1/users/{{user_id}}",
+            "method": "PUT",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "application/json",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "bearer",
+              "credentials": {
+                "username": "",
+                "password": "{{admin_token}}"
+              }
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"email\": \"jane.smith@example.com\"\n}",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "Delete User",
+            "url": "{{base_url}}/api/v1/users/{{user_id}}",
+            "method": "DELETE",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "none"
+            },
+            "body": {
+              "type": "none",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": ""
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Products API",
+        "icon": {
+          "name": "package",
+          "color": "#2ecc71"
+        },
+        "auth": {
+          "type": "none"
+        },
+        "requests": [
+          {
+            "name": "List Products",
+            "url": "{{base_url}}/api/v1/products",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "Accept",
+                "value": "application/json",
+                "enabled": true
+              }
+            ],
+            "queryParams": [
+              {
+                "name": "page",
+                "value": "1",
+                "enabled": true
+              },
+              {
+                "name": "limit",
+                "value": "20",
+                "enabled": true
+              },
+              {
+                "name": "category",
+                "value": "{{product_category}}",
+                "enabled": false
+              }
+            ],
+            "pathParams": [],
+            "auth": {
+              "type": "apiKey",
+              "credentials": {
+                "username": "X-API-Key",
+                "password": "{{api_key}}"
+              }
+            },
+            "body": {
+              "type": "none",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": ""
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "Create Product",
+            "url": "{{base_url}}/api/v1/products",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "application/json",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "bearer",
+              "credentials": {
+                "username": "",
+                "password": "{{access_token}}"
+              }
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"name\": \"{{product_name}}\",\n  \"description\": \"A sample product description\",\n  \"price\": 29.99,\n  \"category\": \"electronics\",\n  \"inStock\": true,\n  \"tags\": [\"sample\", \"test\"]\n}",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "environments": [
+    {
+      "name": "Development",
+      "color": "#f39c12",
+      "isDefault": true,
+      "isLocalOnly": false,
+      "variables": [
+        {
+          "name": "base_url",
+          "value": "https://api-dev.example.com",
+          "isSecret": false
+        },
+        {
+          "name": "user_id",
+          "value": "12345",
+          "isSecret": false
+        },
+        {
+          "name": "version",
+          "value": "1.2.3",
+          "isSecret": false
+        },
+        {
+          "name": "access_token",
+          "value": "dev_token_123456789",
+          "isSecret": true
+        },
+        {
+          "name": "admin_username",
+          "value": "admin",
+          "isSecret": false
+        },
+        {
+          "name": "admin_password",
+          "value": "admin_pass_dev",
+          "isSecret": true
+        },
+        {
+          "name": "admin_token",
+          "value": "admin_token_dev",
+          "isSecret": true
+        },
+        {
+          "name": "api_key",
+          "value": "dev_api_key_xyz789",
+          "isSecret": true
+        },
+        {
+          "name": "new_username",
+          "value": "testuser",
+          "isSecret": false
+        },
+        {
+          "name": "new_email",
+          "value": "testuser@example.com",
+          "isSecret": false
+        },
+        {
+          "name": "product_category",
+          "value": "electronics",
+          "isSecret": false
+        },
+        {
+          "name": "product_name",
+          "value": "Sample Product",
+          "isSecret": false
+        }
+      ]
+    },
+    {
+      "name": "Production",
+      "color": "#e74c3c",
+      "isDefault": false,
+      "isLocalOnly": false,
+      "variables": [
+        {
+          "name": "base_url",
+          "value": "https://api.example.com",
+          "isSecret": false
+        },
+        {
+          "name": "user_id",
+          "value": "67890",
+          "isSecret": false
+        },
+        {
+          "name": "version",
+          "value": "1.2.3",
+          "isSecret": false
+        },
+        {
+          "name": "access_token",
+          "value": "",
+          "isSecret": true
+        },
+        {
+          "name": "admin_username",
+          "value": "admin",
+          "isSecret": false
+        },
+        {
+          "name": "admin_password",
+          "value": "",
+          "isSecret": true
+        },
+        {
+          "name": "admin_token",
+          "value": "",
+          "isSecret": true
+        },
+        {
+          "name": "api_key",
+          "value": "",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

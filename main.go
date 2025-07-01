@@ -10,12 +10,35 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"github.com/google/uuid"
 )
 
-// HTTPie Collection Structures
+// HTTPie Workspace Structure (new format)
+type HTTPieWorkspace struct {
+	Meta         HTTPieMeta          `json:"meta"`
+	Entry        HTTPieEntry         `json:"entry"`
+	Environments []HTTPieEnvironment `json:"environments,omitempty"`
+}
+
 type HTTPieCollection struct {
-	Meta  HTTPieMeta  `json:"meta"`
-	Entry HTTPieEntry `json:"entry"`
+	Name     string          `json:"name"`
+	Icon     HTTPieIcon      `json:"icon"`
+	Auth     HTTPieAuth      `json:"auth"`
+	Requests []HTTPieRequest `json:"requests"`
+}
+
+type HTTPieEnvironment struct {
+	Name        string                     `json:"name"`
+	Color       string                     `json:"color"`
+	IsDefault   bool                       `json:"isDefault"`
+	IsLocalOnly bool                       `json:"isLocalOnly"`
+	Variables   []HTTPieEnvironmentVariable `json:"variables"`
+}
+
+type HTTPieEnvironmentVariable struct {
+	Name     string `json:"name"`
+	Value    string `json:"value"`
+	IsSecret bool   `json:"isSecret"`
 }
 
 type HTTPieMeta struct {
@@ -28,10 +51,11 @@ type HTTPieMeta struct {
 }
 
 type HTTPieEntry struct {
-	Name     string          `json:"name"`
-	Icon     HTTPieIcon      `json:"icon"`
-	Auth     HTTPieAuth      `json:"auth"`
-	Requests []HTTPieRequest `json:"requests"`
+	Name        string               `json:"name"`
+	Icon        HTTPieIcon           `json:"icon"`
+	Auth        HTTPieAuth           `json:"auth"`
+	Requests    []HTTPieRequest      `json:"requests,omitempty"`
+	Collections []HTTPieCollection  `json:"collections,omitempty"`
 }
 
 type HTTPieIcon struct {
@@ -40,7 +64,14 @@ type HTTPieIcon struct {
 }
 
 type HTTPieAuth struct {
-	Type string `json:"type"`
+	Type        string                 `json:"type"`
+	Target      string                 `json:"target,omitempty"`
+	Credentials HTTPieAuthCredentials  `json:"credentials,omitempty"`
+}
+
+type HTTPieAuthCredentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type HTTPieRequest struct {
@@ -128,7 +159,33 @@ type PostmanRequest struct {
 	Method string          `json:"method"`
 	Header []PostmanHeader `json:"header,omitempty"`
 	Body   *PostmanBody    `json:"body,omitempty"`
+	Auth   *PostmanAuth    `json:"auth,omitempty"`
 	URL    PostmanURL      `json:"url"`
+}
+
+type PostmanAuth struct {
+	Type   string                 `json:"type"`
+	Bearer []PostmanAuthBearer    `json:"bearer,omitempty"`
+	Basic  []PostmanAuthBasic     `json:"basic,omitempty"`
+	APIKey []PostmanAuthAPIKey    `json:"apikey,omitempty"`
+}
+
+type PostmanAuthBearer struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+	Type  string `json:"type"`
+}
+
+type PostmanAuthBasic struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+	Type  string `json:"type"`
+}
+
+type PostmanAuthAPIKey struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+	Type  string `json:"type"`
 }
 
 type PostmanHeader struct {
@@ -165,6 +222,7 @@ type PostmanQueryParam struct {
 }
 
 type PostmanVariable struct {
+	ID    string `json:"id,omitempty"` // Optional ID for Postman variables
 	Key   string `json:"key"`
 	Value string `json:"value"`
 	Type  string `json:"type"`
@@ -186,13 +244,14 @@ func main() {
 		log.Fatalf("Error reading input file: %v", err)
 	}
 
-	var httpieCollection HTTPieCollection
-	if err := json.Unmarshal(data, &httpieCollection); err != nil {
+	// Try to parse as workspace format first (newer format)
+	var httpieWorkspace HTTPieWorkspace
+	if err := json.Unmarshal(data, &httpieWorkspace); err != nil {
 		log.Fatalf("Error parsing HTTPie collection: %v", err)
 	}
 
 	// Convert to Postman collection
-	postmanCollection := convertToPostman(httpieCollection)
+	postmanCollection := convertWorkspaceToPostman(httpieWorkspace)
 
 	// Generate unique output filename if file exists
 	finalOutputPath := generateUniqueFilename(outputPath)
@@ -208,7 +267,7 @@ func main() {
 	}
 
 	// Print results
-	totalInputAPIs := len(httpieCollection.Entry.Requests)
+	totalInputAPIs := countTotalRequests(httpieWorkspace)
 	convertedAPIs := len(postmanCollection.Item)
 
 	fmt.Printf("Migration completed successfully!\n")
@@ -217,7 +276,46 @@ func main() {
 	fmt.Printf("Output file: %s\n", finalOutputPath)
 }
 
-func convertToPostman(httpie HTTPieCollection) PostmanCollection {
+func convertWorkspaceToPostman(httpie HTTPieWorkspace) PostmanCollection {
+	postman := PostmanCollection{
+		Info: PostmanInfo{
+			PostmanID:   generatePostmanID(),
+			Name:        httpie.Entry.Name,
+			Description: "Converted from HTTPie workspace",
+			Schema:      "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		},
+		Item:     []PostmanItem{},
+		Variable: extractVariablesFromWorkspace(httpie),
+	}
+
+	// Convert direct requests (if any)
+	for _, req := range httpie.Entry.Requests {
+		postmanItem := convertRequest(req)
+		postman.Item = append(postman.Item, postmanItem)
+	}
+
+	// Convert collections (folders)
+	for _, collection := range httpie.Entry.Collections {
+		// Add requests to this folder - for now we'll flatten them
+		// In a more complex version, we could create nested folders
+		for _, req := range collection.Requests {
+			postmanItem := convertRequest(req)
+			postman.Item = append(postman.Item, postmanItem)
+		}
+	}
+
+	return postman
+}
+
+func countTotalRequests(httpie HTTPieWorkspace) int {
+	count := len(httpie.Entry.Requests)
+	for _, collection := range httpie.Entry.Collections {
+		count += len(collection.Requests)
+	}
+	return count
+}
+
+func convertToPostman(httpie HTTPieWorkspace) PostmanCollection {
 	postman := PostmanCollection{
 		Info: PostmanInfo{
 			PostmanID:   generatePostmanID(),
@@ -242,6 +340,7 @@ func convertRequest(httpieReq HTTPieRequest) PostmanItem {
 		Method: httpieReq.Method,
 		Header: convertHeaders(httpieReq.Headers),
 		URL:    convertURL(httpieReq.URL),
+		Auth:   convertAuth(httpieReq.Auth),
 	}
 
 	// Convert body if present
@@ -278,9 +377,70 @@ func convertRequest(httpieReq HTTPieRequest) PostmanItem {
 		}
 	}
 
+	// Generate a name if empty
+	name := httpieReq.Name
+	if name == "" {
+		name = httpieReq.Method + " " + httpieReq.URL
+	}
+
 	return PostmanItem{
-		Name:    httpieReq.Name,
+		Name:    name,
 		Request: postmanReq,
+	}
+}
+
+func convertAuth(httpieAuth HTTPieAuth) *PostmanAuth {
+	if httpieAuth.Type == "none" || httpieAuth.Type == "" {
+		return nil
+	}
+
+	switch httpieAuth.Type {
+	case "bearer":
+		return &PostmanAuth{
+			Type: "bearer",
+			Bearer: []PostmanAuthBearer{
+				{
+					Key:   "token",
+					Value: httpieAuth.Credentials.Password,
+					Type:  "string",
+				},
+			},
+		}
+	case "basic":
+		return &PostmanAuth{
+			Type: "basic",
+			Basic: []PostmanAuthBasic{
+				{
+					Key:   "username",
+					Value: httpieAuth.Credentials.Username,
+					Type:  "string",
+				},
+				{
+					Key:   "password",
+					Value: httpieAuth.Credentials.Password,
+					Type:  "string",
+				},
+			},
+		}
+	case "apiKey":
+		return &PostmanAuth{
+			Type: "apikey",
+			APIKey: []PostmanAuthAPIKey{
+				{
+					Key:   "key",
+					Value: httpieAuth.Credentials.Username,
+					Type:  "string",
+				},
+				{
+					Key:   "value",
+					Value: httpieAuth.Credentials.Password,
+					Type:  "string",
+				},
+			},
+		}
+	default:
+		// For unknown auth types, return nil and let headers handle it
+		return nil
 	}
 }
 
@@ -359,50 +519,101 @@ func convertURL(httpieURL string) PostmanURL {
 	}
 }
 
-func extractVariables(httpie HTTPieCollection) []PostmanVariable {
-	variableSet := make(map[string]bool)
+func extractVariablesFromWorkspace(httpie HTTPieWorkspace) []PostmanVariable {
+	variableSet := make(map[string]string) // Use map to store variable names and their default values
 	var variables []PostmanVariable
 
-	// Extract variables from all URLs and headers
+	// First, extract variables from environments (use default environment if available)
+	var defaultEnv *HTTPieEnvironment
+	for _, env := range httpie.Environments {
+		if env.IsDefault {
+			defaultEnv = &env
+			break
+		}
+	}
+
+	// If no default environment, use the first one
+	if defaultEnv == nil && len(httpie.Environments) > 0 {
+		defaultEnv = &httpie.Environments[0]
+	}
+
+	// Add environment variables
+	if defaultEnv != nil {
+		for _, envVar := range defaultEnv.Variables {
+			variableSet[envVar.Name] = envVar.Value
+		}
+	}
+
+	// Extract variables from all URLs and headers (as before)
 	variableRegex := regexp.MustCompile(`\{\{([^}]+)\}\}`)
 
+	// Process direct requests
 	for _, req := range httpie.Entry.Requests {
-		// Extract from URL
-		matches := variableRegex.FindAllStringSubmatch(req.URL, -1)
+		extractVariablesFromRequest(req, variableRegex, variableSet)
+	}
+
+	// Process collections
+	for _, collection := range httpie.Entry.Collections {
+		for _, req := range collection.Requests {
+			extractVariablesFromRequest(req, variableRegex, variableSet)
+		}
+	}
+
+	// Convert map to slice
+	for varName, varValue := range variableSet {
+		variables = append(variables, PostmanVariable{
+			ID:    uuid.New().String(), // Generate a unique ID for each variable
+			Key:   varName,
+			Value: varValue,
+			Type:  "string",
+		})
+	}
+
+	return variables
+}
+
+func extractVariablesFromRequest(req HTTPieRequest, variableRegex *regexp.Regexp, variableSet map[string]string) {
+	// Extract from URL
+	matches := variableRegex.FindAllStringSubmatch(req.URL, -1)
+	for _, match := range matches {
+		if len(match) > 1 {
+			varName := match[1]
+			if _, exists := variableSet[varName]; !exists {
+				variableSet[varName] = "" // Empty default value
+			}
+		}
+	}
+
+	// Extract from headers
+	for _, header := range req.Headers {
+		matches := variableRegex.FindAllStringSubmatch(header.Value, -1)
 		for _, match := range matches {
 			if len(match) > 1 {
 				varName := match[1]
-				if !variableSet[varName] {
-					variables = append(variables, PostmanVariable{
-						Key:   varName,
-						Value: "",
-						Type:  "string",
-					})
-					variableSet[varName] = true
-				}
-			}
-		}
-
-		// Extract from headers
-		for _, header := range req.Headers {
-			matches := variableRegex.FindAllStringSubmatch(header.Value, -1)
-			for _, match := range matches {
-				if len(match) > 1 {
-					varName := match[1]
-					if !variableSet[varName] {
-						variables = append(variables, PostmanVariable{
-							Key:   varName,
-							Value: "",
-							Type:  "string",
-						})
-						variableSet[varName] = true
-					}
+				if _, exists := variableSet[varName]; !exists {
+					variableSet[varName] = "" // Empty default value
 				}
 			}
 		}
 	}
 
-	return variables
+	// Extract from body
+	if req.Body.Text.Value != "" {
+		matches := variableRegex.FindAllStringSubmatch(req.Body.Text.Value, -1)
+		for _, match := range matches {
+			if len(match) > 1 {
+				varName := match[1]
+				if _, exists := variableSet[varName]; !exists {
+					variableSet[varName] = "" // Empty default value
+				}
+			}
+		}
+	}
+}
+
+func extractVariables(httpie HTTPieWorkspace) []PostmanVariable {
+	// This function is kept for backward compatibility but now delegates to the new function
+	return extractVariablesFromWorkspace(httpie)
 }
 
 func generatePostmanID() string {
