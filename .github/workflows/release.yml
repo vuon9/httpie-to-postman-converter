@@ -44,32 +44,8 @@ jobs:
         tag_name: ${{ steps.version.outputs.VERSION }}
         name: Release ${{ steps.version.outputs.VERSION }}
         body: |
-          ## HTTPie to Postman Converter ${{ steps.version.outputs.VERSION }}
-
-          ### Download Instructions
-
-          Choose the appropriate binary for your platform:
-
-          - **Linux (x64)**: `httpie-to-postman-linux-amd64`
-          - **Linux (ARM64)**: `httpie-to-postman-linux-arm64`
-          - **macOS (Intel)**: `httpie-to-postman-darwin-amd64`
-          - **macOS (Apple Silicon)**: `httpie-to-postman-darwin-arm64`
-          - **Windows (x64)**: `httpie-to-postman-windows-amd64.exe`
-          - **Windows (ARM64)**: `httpie-to-postman-windows-arm64.exe`
-
-          ### Installation
-
-          1. Download the binary for your platform
-          2. Make it executable (Linux/macOS): `chmod +x httpie-to-postman-*`
-          3. Move to your PATH or run directly
-
-          ### Usage
-
-          ```bash
-          ./httpie-to-postman-* input.json output.postman.json
-          ```
-
-          ### Checksums
+          ### HTTPie to Postman Converter ${{ steps.version.outputs.VERSION }}
+          #### Checksums
 
           Verify your download using the checksums provided in `checksums.txt`.
         files: |
