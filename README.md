@@ -7,7 +7,18 @@ It aims to unblock users who need to migrate their API collections from HTTPie t
 ## Installation
 
 ### Option 1: Prebuilt binary
-Please look at the release page to have your prebuilt binary
+1. Please look at the release page to have your prebuilt binary:
+
+- **Linux (x64)**: `httpie-to-postman-linux-amd64`
+- **Linux (ARM64)**: `httpie-to-postman-linux-arm64`
+- **macOS (Intel)**: `httpie-to-postman-darwin-amd64`
+- **macOS (Apple Silicon)**: `httpie-to-postman-darwin-arm64`
+- **Windows (x64)**: `httpie-to-postman-windows-amd64.exe`
+- **Windows (ARM64)**: `httpie-to-postman-windows-arm64.exe`
+
+2. Download the binary for your platform
+3. Make it executable (Linux/macOS): `chmod +x httpie-to-postman-*`
+4. Move to your PATH or run directly
 
 ### Option 2: Build from Source
 
@@ -22,10 +33,7 @@ go build -o httpie-to-postman main.go
 
 ## Usage
 
-### Example
-
 ```bash
-# Using binary in PATH
 httpie-to-postman collection.json output.postman.json
 
 ### Example of output
