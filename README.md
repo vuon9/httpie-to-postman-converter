@@ -45,11 +45,6 @@ Output file: output.postman.json
 
 If `output.postman.json` already exists, it will create `output_1.postman.json`, `output_2.postman.json`, etc.
 
-### Environment Variables
-- Automatic extraction from URLs and headers
-- Creation of Postman variables section
-- Support for nested variable references
-
 ## File Format Support
 
 ### Input: HTTPie Collection Format
