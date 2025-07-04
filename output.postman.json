@@ -1,0 +1,319 @@
+{
+  "info": {
+    "_postman_id": "1751598313562193649",
+    "name": "My API Testing Workspace",
+    "description": "Converted from HTTPie workspace",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get User Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "User-Agent",
+            "value": "HTTPie-Desktop/{{version}}",
+            "type": "text"
+          }
+        ],
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{base_url}}",
+            "api",
+            "v1",
+            "users",
+            "{{user_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create New User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{new_username}}\",\n  \"email\": \"{{new_email}}\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"user\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{base_url}}",
+            "api",
+            "v1",
+            "users"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update User",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"email\": \"jane.smith@example.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{base_url}}",
+            "api",
+            "v1",
+            "users",
+            "{{user_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete User",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/users/{{user_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{base_url}}",
+            "api",
+            "v1",
+            "users",
+            "{{user_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "List Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "auth": {
+          "type": "apikey",
+          "apikey": [
+            {
+              "key": "key",
+              "value": "X-API-Key",
+              "type": "string"
+            },
+            {
+              "key": "value",
+              "value": "{{api_key}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/products",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{base_url}}",
+            "api",
+            "v1",
+            "products"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{product_name}}\",\n  \"description\": \"A sample product description\",\n  \"price\": 29.99,\n  \"category\": \"electronics\",\n  \"inStock\": true,\n  \"tags\": [\"sample\", \"test\"]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/products",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "{{base_url}}",
+            "api",
+            "v1",
+            "products"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "id": "a71096e1-4e4c-4f06-b0cb-b0972934f4fb",
+      "key": "admin_password",
+      "value": "admin_pass_dev",
+      "type": "string"
+    },
+    {
+      "id": "8e9c89a3-a701-47d7-b75b-f6d5e85f11fe",
+      "key": "new_username",
+      "value": "testuser",
+      "type": "string"
+    },
+    {
+      "id": "79dd3669-126a-4364-bda4-600e831efd84",
+      "key": "product_name",
+      "value": "Sample Product",
+      "type": "string"
+    },
+    {
+      "id": "ec00715c-b31b-4d38-bff7-cbe10d5a2bd0",
+      "key": "base_url",
+      "value": "https://api-dev.example.com",
+      "type": "string"
+    },
+    {
+      "id": "f2f03d3f-a145-4578-b083-a540559d289f",
+      "key": "user_id",
+      "value": "12345",
+      "type": "string"
+    },
+    {
+      "id": "3b9ea5c8-d053-4abc-bf9e-3c169c81a6b4",
+      "key": "version",
+      "value": "1.2.3",
+      "type": "string"
+    },
+    {
+      "id": "6f83cd0d-3fbd-4864-808b-46faad4c25ed",
+      "key": "access_token",
+      "value": "dev_token_123456789",
+      "type": "string"
+    },
+    {
+      "id": "e8365320-33e6-4bd9-9057-23c9585145ad",
+      "key": "admin_token",
+      "value": "admin_token_dev",
+      "type": "string"
+    },
+    {
+      "id": "2c3a01d5-0c6b-49fc-9358-fce36192c749",
+      "key": "api_key",
+      "value": "dev_api_key_xyz789",
+      "type": "string"
+    },
+    {
+      "id": "6e53e2f2-ae5f-4a4e-bbd2-f8ba0ca54bd7",
+      "key": "new_email",
+      "value": "testuser@example.com",
+      "type": "string"
+    },
+    {
+      "id": "69fd7f57-106d-44ab-a68b-634909beae91",
+      "key": "product_category",
+      "value": "electronics",
+      "type": "string"
+    },
+    {
+      "id": "b8c0f497-2677-4aa1-bb59-dd0db84c6ce9",
+      "key": "admin_username",
+      "value": "admin",
+      "type": "string"
+    }
+  ]
+}

@@ -269,11 +269,18 @@ func main() {
 	// Print results
 	totalInputAPIs := countTotalRequests(httpieWorkspace)
 	convertedAPIs := len(postmanCollection.Item)
+	totalVariables := len(postmanCollection.Variable)
 
-	fmt.Printf("Migration completed successfully!\n")
-	fmt.Printf("Total APIs input: %d\n", totalInputAPIs)
-	fmt.Printf("Converted: %d\n", convertedAPIs)
-	fmt.Printf("Output file: %s\n", finalOutputPath)
+	errorStr := "\n"
+	if (convertedAPIs != totalInputAPIs) {
+		errorStr = fmt.Sprintf("Some requests were not converted correctly\n")
+	}
+
+	fmt.Printf("Migration completed!%s", errorStr)
+	fmt.Printf("* Total APIs: %d\n", totalInputAPIs)
+	fmt.Printf("* Total problematic APIs: %d\n", totalInputAPIs - convertedAPIs)
+	fmt.Printf("* Total variables: %d\n", totalVariables)
+	fmt.Printf("--> Output file: %s\n", finalOutputPath)
 }
 
 func convertWorkspaceToPostman(httpie HTTPieWorkspace) PostmanCollection {
@@ -523,7 +530,8 @@ func extractVariablesFromWorkspace(httpie HTTPieWorkspace) []PostmanVariable {
 	variableSet := make(map[string]string) // Use map to store variable names and their default values
 	var variables []PostmanVariable
 
-	// First, extract variables from environments (use default environment if available)
+	// Build a map of all environment variables (prioritize default environment)
+	envVarMap := make(map[string]string)
 	var defaultEnv *HTTPieEnvironment
 	for _, env := range httpie.Environments {
 		if env.IsDefault {
@@ -531,17 +539,29 @@ func extractVariablesFromWorkspace(httpie HTTPieWorkspace) []PostmanVariable {
 			break
 		}
 	}
-
-	// If no default environment, use the first one
 	if defaultEnv == nil && len(httpie.Environments) > 0 {
 		defaultEnv = &httpie.Environments[0]
 	}
-
-	// Add environment variables
 	if defaultEnv != nil {
 		for _, envVar := range defaultEnv.Variables {
-			variableSet[envVar.Name] = envVar.Value
+			envVarMap[envVar.Name] = envVar.Value
 		}
+	}
+	// Add all other environments (do not overwrite default)
+	for _, env := range httpie.Environments {
+		if defaultEnv != nil && env.Name == defaultEnv.Name {
+			continue
+		}
+		for _, envVar := range env.Variables {
+			if _, exists := envVarMap[envVar.Name]; !exists {
+				envVarMap[envVar.Name] = envVar.Value
+			}
+		}
+	}
+
+	// Add environment variables to variableSet
+	for k, v := range envVarMap {
+		variableSet[k] = v
 	}
 
 	// Extract variables from all URLs and headers (as before)
@@ -549,13 +569,13 @@ func extractVariablesFromWorkspace(httpie HTTPieWorkspace) []PostmanVariable {
 
 	// Process direct requests
 	for _, req := range httpie.Entry.Requests {
-		extractVariablesFromRequest(req, variableRegex, variableSet)
+		extractVariablesFromRequest(req, variableRegex, variableSet, envVarMap)
 	}
 
 	// Process collections
 	for _, collection := range httpie.Entry.Collections {
 		for _, req := range collection.Requests {
-			extractVariablesFromRequest(req, variableRegex, variableSet)
+			extractVariablesFromRequest(req, variableRegex, variableSet, envVarMap)
 		}
 	}
 
@@ -572,13 +592,16 @@ func extractVariablesFromWorkspace(httpie HTTPieWorkspace) []PostmanVariable {
 	return variables
 }
 
-func extractVariablesFromRequest(req HTTPieRequest, variableRegex *regexp.Regexp, variableSet map[string]string) {
+// Updated signature to accept envVarMap
+func extractVariablesFromRequest(req HTTPieRequest, variableRegex *regexp.Regexp, variableSet map[string]string, envVarMap map[string]string) {
 	// Extract from URL
 	matches := variableRegex.FindAllStringSubmatch(req.URL, -1)
 	for _, match := range matches {
 		if len(match) > 1 {
 			varName := match[1]
-			if _, exists := variableSet[varName]; !exists {
+			if val, exists := envVarMap[varName]; exists {
+				variableSet[varName] = val
+			} else if _, exists := variableSet[varName]; !exists {
 				variableSet[varName] = "" // Empty default value
 			}
 		}
@@ -590,8 +613,10 @@ func extractVariablesFromRequest(req HTTPieRequest, variableRegex *regexp.Regexp
 		for _, match := range matches {
 			if len(match) > 1 {
 				varName := match[1]
-				if _, exists := variableSet[varName]; !exists {
-					variableSet[varName] = "" // Empty default value
+				if val, exists := envVarMap[varName]; exists {
+					variableSet[varName] = val
+				} else if _, exists := variableSet[varName]; !exists {
+					variableSet[varName] = ""
 				}
 			}
 		}
@@ -603,8 +628,10 @@ func extractVariablesFromRequest(req HTTPieRequest, variableRegex *regexp.Regexp
 		for _, match := range matches {
 			if len(match) > 1 {
 				varName := match[1]
-				if _, exists := variableSet[varName]; !exists {
-					variableSet[varName] = "" // Empty default value
+				if val, exists := envVarMap[varName]; exists {
+					variableSet[varName] = val
+				} else if _, exists := variableSet[varName]; !exists {
+					variableSet[varName] = ""
 				}
 			}
 		}
