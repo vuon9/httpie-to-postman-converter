@@ -42,7 +42,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.version.outputs.VERSION }}
-        name: Release ${{ steps.version.outputs.VERSION }}
+        name: ${{ steps.version.outputs.VERSION }}
         body: |
           ### HTTPie to Postman Converter ${{ steps.version.outputs.VERSION }}
           #### Checksums
