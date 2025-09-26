@@ -36,7 +36,7 @@ jobs:
 
     - name: Create checksums
       run: |
-        sha256sum httpie-to-postman-* > checksums.txt
+        sha256sum postmanzier-* > checksums.txt
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
