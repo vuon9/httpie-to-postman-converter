@@ -1,6 +1,6 @@
 # HTTPie to Postman Collection Converter
 
-A Go command-line tool that converts HTTPie collection files to Postman Collection Format v2.1.0. 
+A Go command-line tool that converts HTTPie collection files to Postman Collection Format v2.1.0.
 
 It aims to unblock users who need to migrate their API collections from HTTPie to Postman or any other tool that supports Postman collections.
 
@@ -33,17 +33,55 @@ go build -o httpie-to-postman main.go
 
 ## Usage
 
-```bash
-httpie-to-postman collection.json output.postman.json
+This tool supports two main commands: converting a single collection and merging multiple collections.
 
-### Example of output
-Migration completed successfully!
-Total APIs input: 52
-Converted: 52
-Output file: output.postman.json
+### Converting a Single Collection
+
+To convert a single HTTPie collection file to a Postman collection:
+
+```bash
+httpie-to-postman <input-httpie-collection> <output-postman-collection>
 ```
 
-If `output.postman.json` already exists, it will create `output_1.postman.json`, `output_2.postman.json`, etc.
+**Example:**
+
+```bash
+httpie-to-postman collection.json output.postman.json
+```
+
+If `output.postman.json` already exists, the tool will create a new file with a numbered suffix (e.g., `output.postman_1.json`).
+
+**Example Output:**
+
+```
+Migration completed!
+* Total APIs: 1
+* Total problematic APIs: 0
+* Total variables: 0
+--> Output file: output.postman.json
+```
+
+### Merging Multiple Collections
+
+To merge multiple HTTPie collections into a single Postman collection, use the `merge` command. Each input collection will be placed in its own folder within the merged Postman collection.
+
+```bash
+httpie-to-postman merge <output-file> <input-file-1> [<input-file-2> ...]
+```
+
+**Example:**
+
+```bash
+httpie-to-postman merge merged.postman.json collection1.json collection2.json
+```
+
+**Example Output:**
+
+```
+Merge completed!
+--> Output file: merged.postman.json
+```
+
 
 ## File Format Support
 

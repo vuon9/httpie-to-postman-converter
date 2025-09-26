@@ -152,7 +152,8 @@ type PostmanInfo struct {
 
 type PostmanItem struct {
 	Name    string         `json:"name"`
-	Request PostmanRequest `json:"request"`
+	Request *PostmanRequest `json:"request,omitempty"`
+	Item    []PostmanItem  `json:"item,omitempty"`
 }
 
 type PostmanRequest struct {
@@ -229,9 +230,117 @@ type PostmanVariable struct {
 }
 
 func main() {
+	if len(os.Args) < 2 {
+		printUsage()
+		os.Exit(1)
+	}
+
+	switch os.Args[1] {
+	case "merge":
+		handleMergeCommand()
+	default:
+		handleConvertCommand()
+	}
+}
+
+func handleMergeCommand() {
+	if len(os.Args) < 4 {
+		fmt.Println("Usage: httpie-to-postman merge <output-file> <input-file-1> [<input-file-2> ...]")
+		fmt.Println("Example: httpie-to-postman merge merged.postman.json collection1.json collection2.json")
+		os.Exit(1)
+	}
+
+	outputFile := os.Args[2]
+	inputFiles := os.Args[3:]
+
+	mergedCollection := PostmanCollection{
+		Info: PostmanInfo{
+			PostmanID:   generatePostmanID(),
+			Name:        "Merged HTTPie Collections",
+			Description: "Merged from multiple HTTPie collections",
+			Schema:      "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		},
+		Item:     []PostmanItem{},
+		Variable: []PostmanVariable{},
+	}
+
+	allVariables := make(map[string]string)
+
+	for _, inputFile := range inputFiles {
+		data, err := os.ReadFile(inputFile)
+		if err != nil {
+			log.Printf("Error reading input file %s: %v. Skipping.", inputFile, err)
+			continue
+		}
+
+		var httpieWorkspace HTTPieWorkspace
+		if err := json.Unmarshal(data, &httpieWorkspace); err != nil {
+			log.Printf("Error parsing HTTPie collection from %s: %v. Skipping.", inputFile, err)
+			continue
+		}
+
+		folderName := httpieWorkspace.Entry.Name
+		if folderName == "" {
+			folderName = strings.TrimSuffix(filepath.Base(inputFile), filepath.Ext(inputFile))
+		}
+
+		folder := PostmanItem{
+			Name: folderName,
+			Item: []PostmanItem{},
+		}
+
+		// Convert direct requests
+		for _, req := range httpieWorkspace.Entry.Requests {
+			folder.Item = append(folder.Item, convertRequest(req))
+		}
+
+		// Convert requests from collections
+		for _, collection := range httpieWorkspace.Entry.Collections {
+			for _, req := range collection.Requests {
+				folder.Item = append(folder.Item, convertRequest(req))
+			}
+		}
+
+		if len(folder.Item) > 0 {
+			mergedCollection.Item = append(mergedCollection.Item, folder)
+		}
+
+		// Extract and merge variables
+		vars := extractVariablesFromWorkspace(httpieWorkspace)
+		for _, v := range vars {
+			if _, exists := allVariables[v.Key]; !exists {
+				allVariables[v.Key] = v.Value
+			}
+		}
+	}
+
+	for key, value := range allVariables {
+		mergedCollection.Variable = append(mergedCollection.Variable, PostmanVariable{
+			ID:    uuid.New().String(),
+			Key:   key,
+			Value: value,
+			Type:  "string",
+		})
+	}
+
+	// Write merged Postman collection
+	outputData, err := json.MarshalIndent(mergedCollection, "", "  ")
+	if err != nil {
+		log.Fatalf("Error marshaling merged Postman collection: %v", err)
+	}
+
+	finalOutputPath := generateUniqueFilename(outputFile)
+	if err := os.WriteFile(finalOutputPath, outputData, 0644); err != nil {
+		log.Fatalf("Error writing output file: %v", err)
+	}
+
+	fmt.Println("Merge completed!")
+	fmt.Printf("--> Output file: %s\n", finalOutputPath)
+}
+
+func handleConvertCommand() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: httpie-to-postman <input-httpie-collection> <output-postman-collection>")
-		fmt.Println("Example: httpie-to-postman collection.json output.postman.json")
+		printUsage()
 		os.Exit(1)
 	}
 
@@ -283,6 +392,17 @@ func main() {
 	fmt.Printf("--> Output file: %s\n", finalOutputPath)
 }
 
+func printUsage() {
+	fmt.Println("Usage: httpie-to-postman <command> [arguments]")
+	fmt.Println("\nCommands:")
+	fmt.Println("  <input-httpie-collection> <output-postman-collection>")
+	fmt.Println("    Converts a single HTTPie collection to a Postman collection.")
+	fmt.Println("    Example: httpie-to-postman collection.json output.postman.json")
+	fmt.Println("\n  merge <output-file> <input-file-1> [<input-file-2> ...]")
+	fmt.Println("    Merges multiple HTTPie collections into a single Postman collection.")
+	fmt.Println("    Example: httpie-to-postman merge merged.postman.json collection1.json collection2.json")
+}
+
 func convertWorkspaceToPostman(httpie HTTPieWorkspace) PostmanCollection {
 	postman := PostmanCollection{
 		Info: PostmanInfo{
@@ -295,10 +415,16 @@ func convertWorkspaceToPostman(httpie HTTPieWorkspace) PostmanCollection {
 		Variable: extractVariablesFromWorkspace(httpie),
 	}
 
+	// Create a folder for the collection content
+	folder := PostmanItem{
+		Name: httpie.Entry.Name,
+		Item: []PostmanItem{},
+	}
+
 	// Convert direct requests (if any)
 	for _, req := range httpie.Entry.Requests {
 		postmanItem := convertRequest(req)
-		postman.Item = append(postman.Item, postmanItem)
+		folder.Item = append(folder.Item, postmanItem)
 	}
 
 	// Convert collections (folders)
@@ -307,12 +433,17 @@ func convertWorkspaceToPostman(httpie HTTPieWorkspace) PostmanCollection {
 		// In a more complex version, we could create nested folders
 		for _, req := range collection.Requests {
 			postmanItem := convertRequest(req)
-			postman.Item = append(postman.Item, postmanItem)
+			folder.Item = append(folder.Item, postmanItem)
 		}
+	}
+
+	if len(folder.Item) > 0 {
+		postman.Item = append(postman.Item, folder)
 	}
 
 	return postman
 }
+
 
 func countTotalRequests(httpie HTTPieWorkspace) int {
 	count := len(httpie.Entry.Requests)
@@ -392,7 +523,7 @@ func convertRequest(httpieReq HTTPieRequest) PostmanItem {
 
 	return PostmanItem{
 		Name:    name,
-		Request: postmanReq,
+		Request: &postmanReq,
 	}
 }
 

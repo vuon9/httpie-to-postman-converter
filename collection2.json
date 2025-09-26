@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "format": "httpie-workspace-v1",
+    "version": "1.0.0",
+    "contentType": "application/vnd.httpie.workspace+json",
+    "schema": "https://httpie.io/schemas/httpie-workspace-v1.json",
+    "docs": "https://httpie.io/docs/cli/sharing-and-collaboration",
+    "source": "httpie-desktop-app"
+  },
+  "entry": {
+    "name": "Collection 2",
+    "icon": {
+      "name": "folder",
+      "color": "#4ECDC4"
+    },
+    "auth": {
+      "type": "none"
+    },
+    "requests": [
+      {
+        "name": "Create Product",
+        "url": "https://api.example.com/products",
+        "method": "POST",
+        "headers": [
+          {
+            "name": "Content-Type",
+            "value": "application/json",
+            "enabled": true
+          }
+        ],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "none"
+        },
+        "body": {
+          "type": "text",
+          "text": {
+            "value": "{\"name\": \"New Gadget\"}",
+            "format": "application/json"
+          }
+        }
+      }
+    ],
+    "collections": []
+  }
+}

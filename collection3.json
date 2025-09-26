@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "format": "httpie-workspace-v1",
+    "version": "1.0.0",
+    "contentType": "application/vnd.httpie.workspace+json",
+    "schema": "https://httpie.io/schemas/httpie-workspace-v1.json",
+    "docs": "https://httpie.io/docs/cli/sharing-and-collaboration",
+    "source": "httpie-desktop-app"
+  },
+  "entry": {
+    "name": "Collection 3",
+    "icon": {
+      "name": "folder",
+      "color": "#45B7D1"
+    },
+    "auth": {
+      "type": "none"
+    },
+    "requests": [
+       {
+        "name": "Get Orders",
+        "url": "https://api.example.com/orders",
+        "method": "GET",
+        "headers": [],
+        "queryParams": [],
+        "pathParams": [],
+        "auth": {
+          "type": "bearer",
+          "credentials": {
+              "password": "{{token}}"
+          }
+        },
+        "body": {
+          "type": "none"
+        }
+      }
+    ],
+    "collections": []
+  }
+}
