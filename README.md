@@ -63,23 +63,34 @@ Migration completed!
 
 ### Merging Multiple Collections
 
-To merge multiple HTTPie collections into a single Postman collection, use the `merge` command. Each input collection will be placed in its own folder within the merged Postman collection.
+The `merge` command allows you to combine multiple collection files into a single Postman collection. It supports both HTTPie and Postman collections, automatically detecting the collection type from the first input file. Each input collection will be placed in its own folder within the merged collection.
 
 ```bash
 httpie-to-postman merge <output-file> <input-file-1> [<input-file-2> ...]
 ```
 
-**Example:**
+**Example (Merging HTTPie Collections):**
 
 ```bash
-httpie-to-postman merge merged.postman.json collection1.json collection2.json
+httpie-to-postman merge merged-httpie.postman.json collection1.json collection2.json
+```
+
+**Example (Merging Postman Collections):**
+
+```bash
+httpie-to-postman merge merged-postman.postman.json postman_collection1.json postman_collection2.json
 ```
 
 **Example Output:**
 
 ```
-Merge completed!
---> Output file: merged.postman.json
+HTTPie collections merge completed!
+--> Output file: merged-httpie.postman.json
+```
+or
+```
+Postman collections merge completed!
+--> Output file: merged-postman.postman.json
 ```
 
 

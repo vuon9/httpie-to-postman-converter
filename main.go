@@ -253,6 +253,93 @@ func handleMergeCommand() {
 	outputFile := os.Args[2]
 	inputFiles := os.Args[3:]
 
+	firstFile, err := os.ReadFile(inputFiles[0])
+	if err != nil {
+		log.Fatalf("Error reading first input file %s: %v", inputFiles[0], err)
+	}
+
+	if isPostmanCollection(firstFile) {
+		mergePostmanCollections(outputFile, inputFiles)
+	} else {
+		mergeHTTPieCollections(outputFile, inputFiles)
+	}
+}
+
+func isPostmanCollection(data []byte) bool {
+	var collection PostmanCollection
+	if err := json.Unmarshal(data, &collection); err != nil {
+		return false
+	}
+	return collection.Info.Schema != ""
+}
+
+func mergePostmanCollections(outputFile string, inputFiles []string) {
+	mergedCollection := PostmanCollection{
+		Info: PostmanInfo{
+			PostmanID:   generatePostmanID(),
+			Name:        "Merged Postman Collections",
+			Description: "Merged from multiple Postman collections",
+			Schema:      "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		},
+		Item:     []PostmanItem{},
+		Variable: []PostmanVariable{},
+	}
+
+	allVariables := make(map[string]PostmanVariable)
+
+	for _, inputFile := range inputFiles {
+		data, err := os.ReadFile(inputFile)
+		if err != nil {
+			log.Printf("Error reading input file %s: %v. Skipping.", inputFile, err)
+			continue
+		}
+
+		var postmanCollection PostmanCollection
+		if err := json.Unmarshal(data, &postmanCollection); err != nil {
+			log.Printf("Error parsing Postman collection from %s: %v. Skipping.", inputFile, err)
+			continue
+		}
+
+		folderName := postmanCollection.Info.Name
+		if folderName == "" {
+			folderName = strings.TrimSuffix(filepath.Base(inputFile), filepath.Ext(inputFile))
+		}
+
+		folder := PostmanItem{
+			Name: folderName,
+			Item: postmanCollection.Item,
+		}
+
+		mergedCollection.Item = append(mergedCollection.Item, folder)
+
+		// Merge variables
+		for _, v := range postmanCollection.Variable {
+			if _, exists := allVariables[v.Key]; !exists {
+				allVariables[v.Key] = v
+			}
+		}
+	}
+
+	for _, v := range allVariables {
+		mergedCollection.Variable = append(mergedCollection.Variable, v)
+	}
+
+	// Write merged Postman collection
+	outputData, err := json.MarshalIndent(mergedCollection, "", "  ")
+	if err != nil {
+		log.Fatalf("Error marshaling merged Postman collection: %v", err)
+	}
+
+	finalOutputPath := generateUniqueFilename(outputFile)
+	if err := os.WriteFile(finalOutputPath, outputData, 0644); err != nil {
+		log.Fatalf("Error writing output file: %v", err)
+	}
+
+	fmt.Println("Postman collections merge completed!")
+	fmt.Printf("--> Output file: %s\n", finalOutputPath)
+}
+
+func mergeHTTPieCollections(outputFile string, inputFiles []string) {
 	mergedCollection := PostmanCollection{
 		Info: PostmanInfo{
 			PostmanID:   generatePostmanID(),
@@ -334,7 +421,7 @@ func handleMergeCommand() {
 		log.Fatalf("Error writing output file: %v", err)
 	}
 
-	fmt.Println("Merge completed!")
+	fmt.Println("HTTPie collections merge completed!")
 	fmt.Printf("--> Output file: %s\n", finalOutputPath)
 }
 

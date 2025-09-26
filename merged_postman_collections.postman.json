@@ -1,0 +1,61 @@
+{
+  "info": {
+    "_postman_id": "1758871202047012494",
+    "name": "Merged Postman Collections",
+    "description": "Merged from multiple Postman collections",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Postman Collection 1",
+      "item": [
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://jsonplaceholder.typicode.com/posts",
+              "host": [
+                "jsonplaceholder",
+                "typicode",
+                "com"
+              ],
+              "path": [
+                "posts"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postman Collection 2",
+      "item": [
+        {
+          "name": "Get All Comments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://jsonplaceholder.typicode.com/comments",
+              "host": [
+                "jsonplaceholder",
+                "typicode",
+                "com"
+              ],
+              "path": [
+                "comments"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://jsonplaceholder.typicode.com",
+      "type": ""
+    }
+  ]
+}
