@@ -1,58 +1,36 @@
-# HTTPie to Postman Collection Converter
 
-A Go command-line tool that converts HTTPie collection files to Postman Collection Format v2.1.0.
+# Postmanzier
 
-It aims to unblock users who need to migrate their API collections from HTTPie to Postman or any other tool that supports Postman collections.
+A fast CLI tool to merge and convert HTTPie and Postman collections into Postman Collection v2.1.0 format.
 
 ## Installation
 
-### Option 1: Prebuilt binary
-1. Please look at the release page to have your prebuilt binary:
-
-- **Linux (x64)**: `httpie-to-postman-linux-amd64`
-- **Linux (ARM64)**: `httpie-to-postman-linux-arm64`
-- **macOS (Intel)**: `httpie-to-postman-darwin-amd64`
-- **macOS (Apple Silicon)**: `httpie-to-postman-darwin-arm64`
-- **Windows (x64)**: `httpie-to-postman-windows-amd64.exe`
-- **Windows (ARM64)**: `httpie-to-postman-windows-arm64.exe`
-
-2. Download the binary for your platform
-3. Make it executable (Linux/macOS): `chmod +x httpie-to-postman-*`
-4. Move to your PATH or run directly
-
-### Option 2: Build from Source
-
-1. Make sure you have Go installed (version 1.24.3 or later)
-2. Clone or download this repository
-3. Build the tool:
-
-```bash
-cd httpie-to-postman-converter
-go build -o httpie-to-postman main.go
-```
+- Download the latest binary for your OS from the [releases page](https://github.com/vuon9/postmanzier/releases).
+- (Linux/macOS) `chmod +x postmanzier-*`
+- Or build from source:
+  `go build -o postmanzier main.go`
 
 ## Usage
 
-This tool supports two main commands: converting a single collection and merging multiple collections.
+### 1. Convert a Single HTTPie Collection
 
-### Converting a Single Collection
-
-To convert a single HTTPie collection file to a Postman collection:
+Convert an HTTPie collection to Postman format.
 
 ```bash
-httpie-to-postman <input-httpie-collection> <output-postman-collection>
+postmanzier <input-httpie-collection.json> <output-postman-collection.json>
 ```
+
+**Input format:**
+HTTPie workspace/collection JSON (see below).
+
+**Output:**
+A Postman v2.1.0 collection file.
 
 **Example:**
-
 ```bash
-httpie-to-postman collection.json output.postman.json
+postmanzier collection.json output.postman.json
 ```
-
-If `output.postman.json` already exists, the tool will create a new file with a numbered suffix (e.g., `output.postman_1.json`).
-
-**Example Output:**
-
+_Output:_
 ```
 Migration completed!
 * Total APIs: 1
@@ -61,68 +39,67 @@ Migration completed!
 --> Output file: output.postman.json
 ```
 
-### Merging Multiple Collections
-
-The `merge` command allows you to combine multiple collection files into a single Postman collection. It supports both HTTPie and Postman collections, automatically detecting the collection type from the first input file. Each input collection will be placed in its own folder within the merged collection.
-
-```bash
-httpie-to-postman merge <output-file> <input-file-1> [<input-file-2> ...]
+**Supported input format:**
+```json
+{
+  "meta": { "format": "httpie", "version": "1.0.0" },
+  "entry": { "name": "Collection Name", "requests": [...] }
+}
 ```
 
-**Example (Merging HTTPie Collections):**
+---
+
+### 2. Merge Multiple Collections
+
+Merge multiple HTTPie or Postman collections into a single Postman collection.
+The tool auto-detects the format from the first input file.
 
 ```bash
-httpie-to-postman merge merged-httpie.postman.json collection1.json collection2.json
+postmanzier merge <output-file.json> <input1.json> <input2.json> ...
 ```
 
-**Example (Merging Postman Collections):**
+- Each input collection becomes a folder in the output.
+- Variables are merged and deduplicated.
 
+**Examples:**
+
+_Merge HTTPie collections:_
 ```bash
-httpie-to-postman merge merged-postman.postman.json postman_collection1.json postman_collection2.json
+postmanzier merge merged-httpie.postman.json collection1.json collection2.json
 ```
-
-**Example Output:**
-
+_Output:_
 ```
 HTTPie collections merge completed!
 --> Output file: merged-httpie.postman.json
 ```
-or
+
+_Merge Postman collections:_
+```bash
+postmanzier merge merged-postman.postman.json postman_collection1.json postman_collection2.json
+```
+_Output:_
 ```
 Postman collections merge completed!
 --> Output file: merged-postman.postman.json
 ```
 
+**Supported input formats:**
 
-## File Format Support
-
-### Input: HTTPie Collection Format
-```json
-{
-  "meta": {
-    "format": "httpie",
-    "version": "1.0.0"
-  },
-  "entry": {
-    "name": "Collection Name",
-    "requests": [...]
+- HTTPie: see above.
+- Postman v2.1.0:
+  ```json
+  {
+    "info": { "_postman_id": "...", "name": "Collection Name", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+    "item": [...],
+    "variable": [...]
   }
-}
-```
+  ```
 
-### Output: Postman Collection v2.1.0
-```json
-{
-  "info": {
-    "_postman_id": "...",
-    "name": "Collection Name",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [...],
-  "variable": [...]
-}
-```
+**Output:**
+Always Postman Collection v2.1.0.
+
+---
 
 ## License
 
-This project is open source and available under the MIT License.
+MIT

@@ -245,8 +245,8 @@ func main() {
 
 func handleMergeCommand() {
 	if len(os.Args) < 4 {
-		fmt.Println("Usage: httpie-to-postman merge <output-file> <input-file-1> [<input-file-2> ...]")
-		fmt.Println("Example: httpie-to-postman merge merged.postman.json collection1.json collection2.json")
+		fmt.Println("Usage: postmanzier merge <output-file> <input-file-1> [<input-file-2> ...]")
+		fmt.Println("Example: postmanzier merge merged.postman.json collection1.json collection2.json")
 		os.Exit(1)
 	}
 
@@ -480,14 +480,14 @@ func handleConvertCommand() {
 }
 
 func printUsage() {
-	fmt.Println("Usage: httpie-to-postman <command> [arguments]")
+	fmt.Println("Usage: postmanzier <command> [arguments]")
 	fmt.Println("\nCommands:")
 	fmt.Println("  <input-httpie-collection> <output-postman-collection>")
 	fmt.Println("    Converts a single HTTPie collection to a Postman collection.")
-	fmt.Println("    Example: httpie-to-postman collection.json output.postman.json")
+	fmt.Println("    Example: postmanzier collection.json output.postman.json")
 	fmt.Println("\n  merge <output-file> <input-file-1> [<input-file-2> ...]")
 	fmt.Println("    Merges multiple HTTPie collections into a single Postman collection.")
-	fmt.Println("    Example: httpie-to-postman merge merged.postman.json collection1.json collection2.json")
+	fmt.Println("    Example: postmanzier merge merged.postman.json collection1.json collection2.json")
 }
 
 func convertWorkspaceToPostman(httpie HTTPieWorkspace) PostmanCollection {

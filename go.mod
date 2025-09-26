@@ -1,4 +1,4 @@
-module github.com/vuon9/httpie-to-postman-converter
+module github.com/vuon9/postmanzier
 
 go 1.24.3
 

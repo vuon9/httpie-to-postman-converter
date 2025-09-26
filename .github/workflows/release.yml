@@ -27,12 +27,12 @@ jobs:
     - name: Build binaries
       run: |
         # Build for multiple platforms
-        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o httpie-to-postman-linux-amd64 main.go
-        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o httpie-to-postman-linux-arm64 main.go
-        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o httpie-to-postman-darwin-amd64 main.go
-        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o httpie-to-postman-darwin-arm64 main.go
-        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o httpie-to-postman-windows-amd64.exe main.go
-        GOOS=windows GOARCH=arm64 go build -ldflags="-s -w" -o httpie-to-postman-windows-arm64.exe main.go
+        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o postmanzier-linux-amd64 main.go
+        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o postmanzier-linux-arm64 main.go
+        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o postmanzier-darwin-amd64 main.go
+        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o postmanzier-darwin-arm64 main.go
+        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o postmanzier-windows-amd64.exe main.go
+        GOOS=windows GOARCH=arm64 go build -ldflags="-s -w" -o postmanzier-windows-arm64.exe main.go
 
     - name: Create checksums
       run: |
@@ -49,12 +49,12 @@ jobs:
 
           Verify your download using the checksums provided in `checksums.txt`.
         files: |
-          httpie-to-postman-linux-amd64
-          httpie-to-postman-linux-arm64
-          httpie-to-postman-darwin-amd64
-          httpie-to-postman-darwin-arm64
-          httpie-to-postman-windows-amd64.exe
-          httpie-to-postman-windows-arm64.exe
+          postmanzier-linux-amd64
+          postmanzier-linux-arm64
+          postmanzier-darwin-amd64
+          postmanzier-darwin-arm64
+          postmanzier-windows-amd64.exe
+          postmanzier-windows-arm64.exe
           checksums.txt
         draft: false
         prerelease: false
