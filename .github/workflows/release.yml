@@ -44,7 +44,7 @@ jobs:
         tag_name: ${{ steps.version.outputs.VERSION }}
         name: ${{ steps.version.outputs.VERSION }}
         body: |
-          ### HTTPie to Postman Converter ${{ steps.version.outputs.VERSION }}
+          ### Postmanizer ${{ steps.version.outputs.VERSION }}
           #### Checksums
 
           Verify your download using the checksums provided in `checksums.txt`.
